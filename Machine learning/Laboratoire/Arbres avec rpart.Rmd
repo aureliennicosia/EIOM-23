@@ -1,0 +1,93 @@
+---
+title: "Arbres avec rpart"
+author: "Aurélien Nicosia"
+date: "31 aout 2023 2023"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Construire et utiliser l'arbre
+
+
+```{r }
+#On utilise le jeu de données cu.summary de la librairie rpart
+library(rpart)
+#help(cu.summary)
+summary(cu.summary)
+
+fit = rpart(Reliability ~ Price + Country + Mileage + Type, data=cu.summary)
+
+#On peut imprimer l'objet créé, mais c'est difficile à lire
+fit
+#On indique que 32 observations ont été supprimées pour cause de données manquantes; ce sont celles pour lesquelles la variable réponse n'est pas observée
+#Lorsque c'est une variable explicative qui est manquante, rpart l'inclut tout de même dans l'arbre.
+```
+
+
+## VISUALISATION
+
+```{r }
+#Il est souvent préférable de visualiser l'arbre obtenu
+plot(fit, margin = 0.1) #margin laisse du blanc autour de l'arbre, pour ne pas couper le texte
+#Il faut ajouter du texte pour voir les divisions
+text(fit, use.n = T, cex = 0.8)
+#Les chiffres sous les feuilles sont le nombre d'observations dans chacune des catégories de la variable reliability
+```
+
+
+##PRÉVISIONS
+
+```{r }
+#On peut regarder les prévisions de l'arbre:
+head(predict(fit)) 
+#On obtient ici les probabilités pour chacune des classe. En effet: 
+table(apply(predict(fit), 1, sum))
+
+#Il est possible de plutôt prédire la classe
+head(predict(fit, type = "class"))
+
+#OPTIONS
+
+#On a vu différents critères pour la classification
+#Dans l'aide de rpart, on indique à parms que par défaut on utilise le coefficient de Gini
+#On peut changer pour information, qui correspond à l'entropie croisée
+#Voici comment faire
+fit2 = rpart(Reliability ~ Price + Country + Mileage + Type, data=cu.summary, parms = list(split = "information"))
+plot(fit2, margin = 0.1) 
+text(fit2, use.n = T, cex = 0.8)
+#C'est le même arbre ici...
+
+#On peut aussi modifier plusieurs autres options de l'ajustement de l'arbre à l'aide de la fonction rpart.control 
+#help(rpart.control)
+```
+
+## Élagage
+
+
+```{r }
+#Lorsqu'on ajuste un arbre, on obtient également l'information nécessaire pour l'élagage 
+#On peut l'afficher de deux façons:
+printcp(fit)
+fit$cptable
+#La deuxième colonne donne le nombre de divisions, soit le nombre le feuilles - 1
+#On voit que l'erreur présentée est relative à celle d'un arbre sans divisions
+
+#On peut également faire un graphique
+plotcp(fit)
+
+#On peut alors choisir le CP et élager l'arbre à la valeur correspondante
+#Le graphique donne l'estimé de l'erreur, et trace des droites verticales de 1 erreur standard
+#La ligne horizontale est tracée à une erreur standard de plus que le plus petit estimé
+#On suggère souvent de choisir le modèle le plus simple dont l'erreur est inférieure à cette valeur ("one standard deviation rule")
+#Ici, ce serait cp = 0.16
+newfit = prune.rpart(fit, cp = 0.16)
+plot(newfit, margin = 0.1)
+text(newfit,use.n = T, cex = 0.8)
+#On choisit ici un arbre beaucoup plus simple!
+```
+

@@ -1,0 +1,70 @@
+---
+title: "Régression avec ACP"
+author: "Aurélien Nicosia"
+date: "31 aout 2023"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Régression avec ACP
+
+On a parlé de l'utilité de l'ACP pour réduire la dimensionalité et du fait qu'on pourrait ainsi l'utiliser dans un modèle prédictif.  
+Voyons un petit exemple ici. 
+
+### Les données
+
+On a 322 observations et 20 variables. Pour cet exemple, on commence par éliminer les observations incomplètes, et les variables catégoriques. On conservera ensuite 50 observations comme un ensemble de validation. La variable qu'on veut prédire est Salary, le salaire des joueurs.
+
+```{r}
+library(ISLR)
+data(Hitters)
+dim(Hitters)
+hitters2 = Hitters[complete.cases(Hitters),-c(14,15,20)]
+
+#set.seed(134) #Pour que les résultats soient reproductibles
+#val.index = sample(1:263, 50)
+val.index = c(170, 83, 38, 234, 189, 159, 197, 152, 68, 256, 39, 150, 219, 
+187, 239, 220, 212, 113, 172, 198, 177, 174, 211, 164, 225, 208, 
+213, 42, 46, 70, 120, 168, 86, 20, 184, 91, 261, 154, 134, 161, 
+11, 81, 149, 153, 214, 18, 115, 140, 217, 5)
+dat.train = hitters2[-val.index,]
+dat.test = hitters2[val.index,]
+
+```
+### Régression linéaire
+
+On commence par ajuster une régresion linéaire avec les variables originales du jeu de données. En utilisant ce modèle, calculez l'écart quadratique moyen de vos prévisions dans le jeu d'entrainement ainsi que l'écart quadratique moyen de vos prévisions dans le jeu de validation.
+
+```{r}
+#Vos codes ici 
+
+```
+
+### Régression linéaire avec ACP
+
+Ajustez maintenant de nouveau un modèle de régression linéaire, mais en utilisant les composantes principales comme variables indépendantes dans le modèle. Calculez de nouveau l'EQM sur le jeu d'entrainement et le jeu de validation. 
+
+Je vous invite à prendre le temps de jeter un coup d'oeil aux composantes principales identifiées par l'ACP.
+
+```{r}
+#Vos codes ici 
+#Ne pas oublier d'enlever la variable réponse!
+#On utilise retx=TRUE comme argument dans prcomp pour obtenir la matrice des observations dans les nouvelles composantes principales
+#Pour le jeu de validation, il faudra utiliser la fonction predict avec l'objet créé par prcomp (comme dans le labo précédent)
+
+
+```
+Que remarquez-vous?  
+Vos notes ici : 
+
+Et si on essayait d'enlever des composantes principales?
+Essayez maintenant d'utiliser seulement trois composantes dans l'analyse de régression. Quels résultats obtenez-vous?
+
+```{r}
+#Vos codes ici 
+```

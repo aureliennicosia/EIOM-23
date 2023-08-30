@@ -1,0 +1,223 @@
+---
+title: "APC - EIOM 2023"
+author: "Aurélien Nicosia"
+date: "31 aout 2023"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Exemple 1 - USArrest
+
+Cet exemple est basé sur le laboratoire sur l'ACP du livre Introduction to Statistical Learning with Applications in R, second edition, disponible ici : \url{https://www.statlearning.com/}
+
+### Les données
+
+On travaille sur le jeu de données USArrests, disponible automatiquement avec le logiciel R. Que contient-il?
+
+```{r}
+head(USArrests)
+```
+
+Vos notes ici :
+
+Quelques statistiques descriptives :
+
+```{r}
+apply(USArrests , 2, mean)
+apply(USArrests, 2, var)
+```
+
+Que remarquez-vous?\
+Vos notes ici :
+
+Regardons maintenant la corrélation entre les variables.
+
+```{r}
+library("ggplot2")                     
+library("GGally")                     
+ggpairs(USArrests) 
+```
+
+Etes-vous capable d'identifier des états similaires par rapport à ces 4 variables? L'ACP pourra nous aider à le faire.
+
+### Analyse en composantes principales (scale = TRUE)
+
+Plusieurs fonctions issues de différents packages sont disponibles dans le logiciel R de calcul PCA :
+
+-   prcomp() et princomp() [package de statistiques R intégré],
+-   PCA() [library FactoMineR],
+-   dudi.pca() [library ade4]
+-   epPCA() [library Exposition]
+
+Quelle que soit la fonction que vous décidez d'utiliser, vous pouvez facilement extraire et visualiser les résultats de l'ACP à l'aide des fonctions R fournies dans le package factoextra R.
+
+```{r}
+library("FactoMineR")
+library("factoextra")
+```
+
+On commence par utiliser l'option scale = TRUE; on y reviendra. Que contient l'objet créé par la fonction?
+
+```{r}
+res.pca <- PCA(USArrests, scale = TRUE)
+
+
+# code ici
+
+```
+
+Vos notes ici :
+
+**Visualisation**
+
+Nous utiliserons le package factoextra R pour aider à l'interprétation de PCA. Quelle que soit la fonction que vous décidez d'utiliser [stats::prcomp(), FactoMiner::PCA(), ade4::dudi.pca(), ExPosition::epPCA()], vous pouvez facilement extraire et visualiser les résultats de la PCA en utilisant les fonctions R fournies dans le package factoextra R.
+
+Ces fonctions incluent :
+
+- get_eigenvalue(res.pca) : Extraire les valeurs propres/variances des composants principaux - fviz_eig(res.pca) : Visualisez les valeurs propres 
+- get_pca_ind(res.pca), get_pca_var(res.pca) : extrayez les résultats pour les individus et les variables, respectivement. 
+- fviz_pca_ind(res.pca), fviz_pca_var(res.pca) : Visualisez les résultats individus et variables, respectivement. 
+- fviz_pca_biplot(res.pca) : Créez un biplot d'individus et de variables.
+
+On peut situer tous les états dans l’espace créé par les deux premières composantes principales. Que représentent les mots en noir? Les mots en bleu?
+
+```{r}
+fviz_pca_biplot(res.pca)
+```
+
+Vos notes ici :
+
+
+Voyons si les premières composantes principales expliquent une grande partie de la variabilité.
+
+```{r}
+#extraction des valeurs propres
+get_eigenvalue(res.pca)
+
+
+```
+
+Vos notes ici :
+
+```{r}
+# graphique
+fviz_eig(res.pca)
+
+```
+
+
+Est-ce que ça semble une bonne idée de regarder uniquement les deux premières composantes principales?\
+Vos notes ici :
+
+## Analyse en composantes principales (scale = FALSE)
+
+Qu'est-ce qui se passe dans ce cas? A vous de jouer!
+
+```{r}
+#Vos codes ici
+```
+
+Vos notes ici :
+
+## Données manquantes
+
+Que se passerait-il s'il manquait des observations?
+
+Vos notes ici :
+
+## Exemple 2 - Decathlon
+
+Exemple inspiré de [celui-ci.](http://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/118-principal-component-analysis-in-r-prcomp-vs-princomp/).
+
+On utilise cette fois des données dans la librairie factoextra. 
+Je vous fournis les codes; quelles sont vos conclusions?
+
+```{r}
+library("factoextra")
+data(decathlon2) 
+#On s'intéresse aux variables 1 à 10; les résultats aux épreuves
+#On enlève les derniers individus, qui ne sont plus actifs
+deca = decathlon2[1:23,1:10]
+res.pca <- prcomp(deca, scale = TRUE)
+
+#Regarder la variance expliquée
+fviz_eig(res.pca)
+
+#Bi-plot
+fviz_pca_biplot(res.pca, repel = TRUE,
+                col.var = "#2E9FDF", # Variables color
+                col.ind = "#696969"  # Individuals color
+                )
+
+#Graphique des individus 
+fviz_pca_ind(res.pca,
+             col.ind = "cos2", # Color by the quality of representation
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+#Graphique des variables
+fviz_pca_var(res.pca,
+             col.var = "contrib", # Color by contributions to the PC
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+```
+
+Vos notes ici :
+
+Avez-vous remarqué cos2 dans le code ci-dessus? Ça va prendre un peu plus de mathématiques pour bien comprendre ce qui se passe. Vous pouvez regarder [ce document](https://personal.utdallas.edu/~herve/abdi-awPCA2010.pdf)
+
+### Ajouter des individus / variables
+
+On peut aussi positionner les individus omis de l'analyse sur les composantes principales qu'on vient de trouver.
+
+```{r}
+ind.sup <- decathlon2[24:27, 1:10]
+#On peut simplement utiliser la fonction predict sur l'objet retourné par prcomp
+ind.sup.coord <- predict(res.pca, newdata = ind.sup)
+```
+
+Qu'est-ce qu'elle fait exactement? On peut faire les calculs au long pour mieux comprendre.
+
+```{r}
+#On standardise d'abord les variables des nouvelles observations
+ind.scaled <- scale(ind.sup, 
+                    center = res.pca$center,
+                    scale = res.pca$scale)
+# Petite fonction pour calculer les coordonnées des individus à partir de leurs variables et de la matrice des composantes principales
+coord_func <- function(ind, loadings){
+  r <- loadings*ind
+  apply(r, 2, sum)
+}
+
+#On applique cette fonction à notre matrice de données
+ind.sup.coord2 <- t(apply(ind.scaled, 1, coord_func, res.pca$rotation ))
+
+#On peut vérifier que les deux méthodes donnent les mêmes résultats
+max(ind.sup.coord2 - ind.sup.coord)
+
+#Et maintenant, on peut ajouter ces nouvelles observations à notre graphique
+graph <- fviz_pca_ind(res.pca, repel = TRUE)
+fviz_add(graph, ind.sup.coord, color ="blue")
+```
+
+Finalement, on peut aussi ajouter une autre variable à nos résultats, ici le type de compétiteur de décathlon.
+
+```{r}
+groups <- as.factor(decathlon2$Competition[1:23])
+fviz_pca_ind(res.pca,
+             col.ind = groups, # color by groups
+             palette = c("#00AFBB",  "#FC4E07"),
+             addEllipses = TRUE, # Concentration ellipses
+             ellipse.type = "confidence",
+             legend.title = "Groups",
+             repel = TRUE
+             )
+```
